@@ -1,5 +1,5 @@
 # Java-Bank-Account
-@author Austin Andrew Grandpre
+
  * Start Date - August 29th, 2018
  * End Date - TBD
  * Project Name - Bank Project
