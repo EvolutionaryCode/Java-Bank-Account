@@ -273,7 +273,7 @@ public class UserInput {
                        System.out.println("How much money would you like to withdraw?");    
                         double amount = scan.nextDouble();
                        System.out.println("Your withdrawal amount: $" + amount);
-                        if((getchecking) >= (amount)){
+                        if((getsavings) >= (amount)){
                             if((amount) >= 3000){ 
                                      if (r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username)
@@ -282,11 +282,12 @@ public class UserInput {
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
                             int code1 = Integer.parseInt(scan.nextLine());
+                            
                             if(gAuth.authorize((gkey), (code1))){
                                 //What to do if they have the correct key and withdraw more then 3000
                                 r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
-                                            .with("checkingbal",(getchecking)-(amount))
+                                            .with("savingsbal",(getsavings)-(amount))
                                             ).run(conn);
                                 r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
@@ -294,7 +295,7 @@ public class UserInput {
                                                 .with("account", "savings")
                                                 .with("action", "withdraw")
                                                 .with("withdraw", (amount))
-                                                .with("leftammount", (getchecking)-(amount))
+                                                .with("leftammount", (getsavings)-(amount))
                                                 .with("Version",(version))
                                                 .with("Timestamp", (timestamp))
                                                 ))).run(conn);
@@ -305,7 +306,8 @@ public class UserInput {
                             System.out.println("Your new balance is: $"+ getsavings1);
                             }
                                      }else{
-                                         //What to do if they don't have 2FA and want 3000 or grater
+                                         //What to do if no 2FA and Want to withdraw more then 3,000$
+                                         System.out.println("Urgent Notice!\nYoure Withdraw Couldn't Be Comepleted Due To:\nYou tried to withdraw more then 3000$ without 2FA\nIf you would like to setup 2FA type Auth back on the main screen!");
                                      }
                             }else {
                                          //What to do if it's under 3,000
@@ -348,7 +350,7 @@ public class UserInput {
                        System.out.println("How much money would you like to deposit?");    
                         double amount = scan.nextDouble();
                        System.out.println("Your deposit amount: $" + amount);
-                        if((currenfunds) <= (amount)){
+                        if((currenfunds) >= (amount)){
                             r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
                                             r.hashMap("username", (username))
@@ -379,7 +381,7 @@ public class UserInput {
                        System.out.println("How much money would you like to deposit?");    
                         double amount1 = scan.nextDouble();
                        System.out.println("Your deposit amount: $" + amount1);
-                        if((currenfunds) <= (amount1)){
+                        if((currenfunds) >= (amount1)){
                             r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
                                             .with("savingsbal",(amount1)+(getsavings))
