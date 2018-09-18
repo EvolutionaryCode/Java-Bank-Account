@@ -1,6 +1,6 @@
 # Project Information
-Start Date - August 29th, 2018
-End Date - TBD
+* Start Date - August 29th, 2018
+* End Date - TBD
 Assignment - Create A Working Bank Account With User Accounts, Login, Withdraw, Deposit
  * Project Name - Bank Project
  * Class Larson - AP Computer Science
@@ -23,7 +23,7 @@ Getting Project Dependinces- Reload The Project Once Loaded In
  * September 13th 2018 - Built Withdraw With Google Authenticator for withdraws over 3,000
  * September 13th 2018 - Built deposit function along with logging for deposit and Withdraw
  September 14th - All Changes Are Now In Github Comments!
-#### Contributing
+### Contributing
 Past Contributors
 ```
  * Stek - Formated Code On Stack Overflow!
@@ -37,7 +37,7 @@ How To Contribute:
 ```
 If you request to Push a change to improve the project feel free and all changes you push will be noted here!
 
-##### Credits
+#### Credits
  * Database - RethinkDB (Open Source NoSQL Database)
  * Auth - Google Authenticator (Created By Google)
  * Auth - Google Java Authenticator Connect (Created by Warrenstrange)
