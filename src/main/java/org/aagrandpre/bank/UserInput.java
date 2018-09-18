@@ -53,6 +53,7 @@ import static org.aagrandpre.bank.Database.r;
  * Re-add Cash Suffixes (K, M, B, T)
  * Re-add numbers function
  * Spit across multiple classes in java
+ * Re-add Message If User Doesn't Do Login, Numbers Or Auth
  * 
  * New User Guide:
  * When promoted type Register to create a new account then go through and complete the fields!
@@ -144,25 +145,25 @@ public class UserInput {
                               .g("name").nth(0)
                              .run(conn);
                       //Do get Savings bal from Username
-                      int getsavings = r.db("APSCI").table("BankAccounts").filter(row ->
+                      double getsavings = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
                               .g("savingsbal").nth(0)
                              .run(conn);
                       //Do get Checking bal from Username
-                      int getchecking = r.db("APSCI").table("BankAccounts").filter(row ->
+                      double getchecking = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
                               .g("checkingbal").nth(0)
                              .run(conn);
                       
                       double currenfunds = 1000;
                       
-                    
+                    //Checking if user has a valid username & password
                      if (r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username)
                              .and(row.g("password").eq(password)))
                              .isEmpty().not()
                              .run(conn)){
-                         
+                         //Checking if the user has a google Key
                           if (r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username)
                                  .and(row.g("gkey").eq("false")))
@@ -173,193 +174,166 @@ public class UserInput {
                             
                             GoogleAuthenticator gAuth = new GoogleAuthenticator();
                             if(gAuth.authorize((gkey), (code))){
-                                //What to do if they have a valid login & google auth key
-                                System.out.println("What action will you be completing?: ");
+                                {
+                         r.db("APSCI").table("BankAccountLogs").insert(
+                           (r.array(
+                            r.hashMap("username", (username))
+                                .with("action", "Login")
+                                .with("Version",(version))
+                                .with("Timestamp", (timestamp))
+                                ))).run(conn);
+                         //What to do if they have a valid account but not google Authy Setup
+                         System.out.println("What action will you be completing?: ");
                                 System.out.println("1 - Withdraw Funds");
                                 System.out.println("2 - Deposit Funds");
                                 System.out.println("3 - Transfer Funds");
                                 System.out.println("4 - Settings");
                                 System.out.println("5 - Admin Portal");
-                                String bankaction = scan.nextLine();
-        
-                if (bankaction.equals("1")){
+                                String bankaction1 = scan.nextLine();
+                                
+                   if (bankaction1.equals("1")){
                     //What do if the user wants to withdraw funds
                     //Grabs Username From UserInput
-                   System.out.println("You're Checkings Account - balance is:" + (getchecking));
-                   System.out.println("You're Savings Account - balance is:" + (getsavings));
+                   System.out.println("You're Checkings Account - balance is: $" + (getchecking));
+                   System.out.println("You're Savings Account - balance is: $" + (getsavings));
                    System.out.println("What account would you like to withdraw funds from?");
                    System.out.println("1 - Checking Account");
                    System.out.println("2 - Savings Account");
                    String withdrawaction = scan.nextLine();
                    //What to do if the user picks withdraw funds
                    if (withdrawaction.equals("1")){
-                       System.out.println("You're checking account ballance is:" + (getchecking));
+                       System.out.println("You're checking account ballance is: $" + (getchecking));
                        System.out.println("How much money would you like to withdraw?");    
                         double amount = scan.nextDouble();
-                       System.out.println("Your withdrawal amount: " + amount);
-                        if((getchecking) <= (amount)){
-                            if((amount) >= 3000){ {
-                                //If They have two factor auth require the code
-                                 if (r.db("APSCI").table("BankAccounts").filter(row ->
-                                 row.g("username").eq(username)
+                       System.out.println("Your withdrawal amount: $" + amount);
+                        if((getchecking) >= (amount)){
+                            if((amount) >= 3000){ 
+                                     if (r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
                                  .and(row.g("gkey").eq("false")))
                                   .isEmpty()
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
-                            int twofac = scan.nextInt();
-                                if(gAuth.authorize((gkey), (twofac))){
-                                //Do What to do if there withdraw ammount is valid
-                                    r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("account", "checking")
-                                                .with("action", "withdraw")
-                                                .with("withdraw", (amount))
-                                                .with("leftammount", (amount)-(getchecking))
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                    //Do update their funds
-                                    r.db("APSCI").table("BankAccounts").update(
+                            int code1 = scan.nextInt();
+                            if(gAuth.authorize((gkey), (code1))){
+                                //What to do if they have the correct key and withdraw more then 3000
+                                r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
-                                            .with("checkingbal",(amount)-(getchecking))
+                                            .with("checkingbal",(getchecking)-(amount))
                                             ).run(conn);
-                                System.out.println("Success!/n You're new account balance is: $" + (getchecking));
-                            }
-                                else{
-                                    //What do if the 2FA Code isn't valid against the key!
-                                    r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("action", "failed2fa")
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                System.out.println("Invalid Google Auth Key!");
-                            }
-                                 }
-                                 else{
-                                     //What to do if they don't have auth setup already
-                                     r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("action", "notwofac")
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                     System.out.println("Due to the large withdraw and your account not having 2FA enabled,/n We have logged you're attempt!");
-                                     
-                                 }
-                            }
-                            }
-                            else{
-                                //Connect to the db to change the new value
                                 r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
                                             r.hashMap("username", (username))
                                                 .with("account", "checking")
                                                 .with("action", "withdraw")
                                                 .with("withdraw", (amount))
-                                                .with("leftammount", (amount)-(getchecking))
+                                                .with("leftammount", (getchecking)-(amount))
                                                 .with("Version",(version))
                                                 .with("Timestamp", (timestamp))
                                                 ))).run(conn);
-                                r.db("APSCI").table("BankAccounts").update(
+                                double getchecking1 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("checkingbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getchecking1);
+                            }
+                                     }else{
+                                         //What to do if they don't have 2FA and want 3000 or grater
+                                     }
+                            }else {
+                                         //What to do if it's under 3,000
+                                          r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
-                                            .with("checkingbal",(amount)-(getchecking))
+                                            .with("checkingbal",(getchecking)-(amount))
                                             ).run(conn);
-                            System.out.println("Your new balance is: $"+ getchecking);
-                        }
-                       } else {
-                            //What to do if they don't have enough money in their account
+                                r.db("APSCI").table("BankAccountLogs").insert(
+                                        (r.array(
+                                            r.hashMap("username", (username))
+                                                .with("account", "checking")
+                                                .with("action", "withdraw")
+                                                .with("withdraw", (amount))
+                                                .with("leftammount", (getchecking)-(amount))
+                                                .with("Version",(version))
+                                                .with("Timestamp", (timestamp))
+                                                ))).run(conn);
+                                double getchecking1 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("checkingbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getchecking1);
+                            }
+                                     }else{
                            System.out.println("What do you think this is?\n a infiti bank?");
                    }
+                   }
                          if (withdrawaction.equals("2")){
-                             System.out.println("You're savings account ballance is:" + (getsavings));
+                            System.out.println("You're savings account ballance is: $" + (getsavings));
                        System.out.println("How much money would you like to withdraw?");    
-                        double amount1 = scan.nextDouble();
-                       System.out.println("Your withdrawal amount: " + amount1);
-                        if((getsavings) <= (amount1)){
-                            if((amount1) >= 3000){ {
-                                //If They have two factor auth require the code
-                                 if (r.db("APSCI").table("BankAccounts").filter(row ->
-                                 row.g("username").eq(username)
+                        double amount = scan.nextDouble();
+                       System.out.println("Your withdrawal amount: $" + amount);
+                        if((getchecking) >= (amount)){
+                            if((amount) >= 3000){ 
+                                     if (r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
                                  .and(row.g("gkey").eq("false")))
                                   .isEmpty()
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
-                            int twofac = scan.nextInt();
-                                if(gAuth.authorize((gkey), (twofac))){
-                                //Do What to do if there withdraw ammount is valid
-                                    r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("action", "withdraw")
-                                                .with("account", "savings")
-                                                .with("withdraw", (amount1))
-                                                .with("leftammount", (amount)-(getsavings))
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                    //Do update their funds
-                                    r.db("APSCI").table("BankAccounts").update(
+                            int code1 = scan.nextInt();
+                            if(gAuth.authorize((gkey), (code1))){
+                                //What to do if they have the correct key and withdraw more then 3000
+                                r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
-                                            .with("savingsbal",(amount1)-(getsavings))
+                                            .with("checkingbal",(getchecking)-(amount))
                                             ).run(conn);
-                                System.out.println("Success!/n You're new account balance is: $" + (getsavings));
-                            }
-                                else{
-                                    //What do if the 2FA Code isn't valid against the key!
-                                    r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("action", "failed2fa")
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                System.out.println("Invalid Google Auth Key!");
-                            }
-                                 }
-                                 else{
-                                     //What to do if they don't have auth setup already
-                                     r.db("APSCI").table("BankAccountLogs").insert(
-                                        (r.array(
-                                            r.hashMap("username", (username))
-                                                .with("action", "notwofac")
-                                                .with("Version",(version))
-                                                .with("Timestamp", (timestamp))
-                                                ))).run(conn);
-                                     System.out.println("Due to the large withdraw and your account not having 2FA enabled,/n We have logged you're attempt!");
-                                     
-                                 }
-                            }
-                            }
-                            else{
-                                //Connect to the db to change the new value
                                 r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
                                             r.hashMap("username", (username))
-                                                .with("action", "withdraw")
                                                 .with("account", "savings")
-                                                .with("withdraw", (amount1))
-                                                .with("leftammount", (amount)-(getsavings))
+                                                .with("action", "withdraw")
+                                                .with("withdraw", (amount))
+                                                .with("leftammount", (getchecking)-(amount))
                                                 .with("Version",(version))
                                                 .with("Timestamp", (timestamp))
                                                 ))).run(conn);
-                                r.db("APSCI").table("BankAccounts").update(
+                                double getsavings1 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("savingsbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getsavings1);
+                            }
+                                     }else{
+                                         //What to do if they don't have 2FA and want 3000 or grater
+                                     }
+                            }else {
+                                         //What to do if it's under 3,000
+                                          r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
-                                            .with("savingsbal",(amount1)-(getsavings))
+                                            .with("checkingbal",(getsavings)-(amount))
                                             ).run(conn);
-                            System.out.println("Your new balance is: $"+ getsavings);
-                        }
-                       } else {
-                            //What to do if they don't have enough money in their account
+                                r.db("APSCI").table("BankAccountLogs").insert(
+                                        (r.array(
+                                            r.hashMap("username", (username))
+                                                .with("account", "checking")
+                                                .with("action", "withdraw")
+                                                .with("withdraw", (amount))
+                                                .with("leftammount", (getsavings)-(amount))
+                                                .with("Version",(version))
+                                                .with("Timestamp", (timestamp))
+                                                ))).run(conn);
+                                double getsavings1 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("savingsbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getsavings1);
+                            }
+                                     }else{
                            System.out.println("What do you think this is?\n a infiti bank?");
                    }
                          }
+                   }//End Withdraw
                    
-                }
-                if (bankaction.equals("2")){
+                if (bankaction1.equals("2")){
                        System.out.println("You're Checkings Account - balance is:" + (getchecking));
                    System.out.println("You're Savings Account - balance is:" + (getsavings));
                    System.out.println("What account would you like to deposit funds from?");
@@ -368,11 +342,11 @@ public class UserInput {
                    String depositaction = scan.nextLine();
                    //What to do if the user picks withdraw funds
                    if (depositaction.equals("1")){
-                       System.out.println("You're checking account ballance is:" + (getchecking));
+                       System.out.println("You're checking account ballance is: $" + (getchecking));
                        System.out.println("How much money would you like to deposit?");    
                         double amount = scan.nextDouble();
-                       System.out.println("Your deposit amount: " + amount);
-                        if((currenfunds) >= (amount)){
+                       System.out.println("Your deposit amount: $" + amount);
+                        if((currenfunds) <= (amount)){
                             r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
                                             r.hashMap("username", (username))
@@ -387,18 +361,27 @@ public class UserInput {
                                         r.hashMap("username", (username))
                                             .with("checkingbal",(amount)+(getchecking))
                                             ).run(conn);
-                            System.out.println("Your new balance is: $"+ getchecking);
+                                 double getchecking2 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("checkingbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getchecking2);
                         } else {
                             //What to do if they don't have enough money in their currentbal
                            System.out.println("You don't have unlimited money");
                    }
                    }
-                         if (depositaction.equals("2")){
-                             System.out.println("You're savings account ballance is:" + (getsavings));
+                   
+                          if (depositaction.equals("2")){
+                             System.out.println("You're savings account ballance is: $" + (getsavings));
                        System.out.println("How much money would you like to deposit?");    
                         double amount1 = scan.nextDouble();
-                       System.out.println("Your deposit amount: " + amount1);
-                        if((currenfunds) >= (amount1)){
+                       System.out.println("Your deposit amount: $" + amount1);
+                        if((currenfunds) <= (amount1)){
+                            r.db("APSCI").table("BankAccounts").update(
+                                        r.hashMap("username", (username))
+                                            .with("savingsbal",(amount1)+(getsavings))
+                                            ).run(conn);
                             r.db("APSCI").table("BankAccountLogs").insert(
                                         (r.array(
                                             r.hashMap("username", (username))
@@ -409,56 +392,40 @@ public class UserInput {
                                                 .with("Version",(version))
                                                 .with("Timestamp", (timestamp))
                                                 ))).run(conn);
-                                r.db("APSCI").table("BankAccounts").update(
-                                        r.hashMap("username", (username))
-                                            .with("savingsbal",(amount1)+(getsavings))
-                                            ).run(conn);
-                            System.out.println("Your new balance is: $"+ getsavings);
+                                 double getsavings2 = r.db("APSCI").table("BankAccounts").filter(row ->
+                                row.g("username").eq(username))
+                                    .g("checkingbal").nth(0)
+                                    .run(conn);
+                            System.out.println("Your new balance is: $"+ getsavings2);
                         } else {
                             //What to do if they don't have enough money in their currentbal
                            System.out.println("You don't have unlimited money");
                    }
                 }
-            }
-                if (bankaction.equals("3")){
+                }
+                if (bankaction1.equals("3")){
                     //What to do if the user wants to Transfer Funds
                     System.out.println("We have not yet setup transfer funds");
                 }
-                if (bankaction.equals("4")){
+                if (bankaction1.equals("4")){
                     //What to do if the user wants to change their account settings
                     System.out.println("We have not yet setup settings");
                 }
-                if (bankaction.equals("5")){
+                if (bankaction1.equals("5")){
                     //What do if the user wants to access the Admin Pannel
                     System.out.println("We have not yet setup the admin pannel");
                 }
-                else{
-                    //What to do if they don't pick a valid request
-                    System.out.println("Invalid Request!");
                 }
-    }
-
-                                
-                            }
-                            else{
-                                //What to do if they have an invalid auth key
-                                System.out.println("Invalid Google Auth Key!");
-                                
-                            }
+                   
+                                }
                            
-                          }
-                          else{
-                         r.db("APSCI").table("BankAccountLogs").insert(
-                           (r.array(
-                            r.hashMap("username", (username))
-                                .with("action", "Login")
-                                .with("Version",(version))
-                                .with("Timestamp", (timestamp))
-                                ))).run(conn);
-                         System.out.println("Welcome\n" + name);
-                          }
-                     }
-                       else {
+               }else {
+                    //What to do if they don't pick a valid Gkey
+                    System.out.println("Invalid Gkey!");
+                }
+    
+                    }else {
+                         //What to do if username doesn't equal or password to DB
                          r.db("APSCI").table("BankAccountLogs").insert(
                            (r.array(
                             r.hashMap("attemptedusername", (username))
@@ -466,9 +433,13 @@ public class UserInput {
                                 .with("Version",(version))
                                 .with("Timestamp", (timestamp))
                                 ))).run(conn);
-                         System.out.println("No User Was Found! We have logged your information");
-                      }
-                    }
+                         System.out.println("No User Was Found! We have logged your information\n Or, you entered you're password inccorectly!");
+                     }
+                    }//End Of Login Section
+                          
+                   
+                     
+                      
                      
                     if (action.equals("Numbers")){
                         
@@ -500,8 +471,8 @@ public class UserInput {
                              .with("level", "user")
                              .with("created", (timestamp))     
                              .with("createdwith", (builder))
-                             .with("savingsbal", "40000")
-                             .with("checkingbal", "100")
+                             .with("savingsbal", 4000000.25)
+                             .with("checkingbal", 100.50)
                              .with("language", "en")
                              .with("pin", (pin))
                              .with("balshow", (showbal))
@@ -533,9 +504,10 @@ public class UserInput {
                            System.out.println("There Is Already An Account with a usename of:" + (username) + "\nWe have logged you're attempt!");        
                     }  
                   
-  
-                  }
-                    //conn.close();
+ 
+                    
+                    conn.close();
+                    }
         }
 }
                
