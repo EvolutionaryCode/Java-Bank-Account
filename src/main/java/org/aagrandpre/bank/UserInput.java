@@ -181,6 +181,7 @@ public class UserInput {
                                 .with("action", "Login")
                                 .with("Version",(version))
                                 .with("Timestamp", (timestamp))
+                                .with("GCode", (code))
                                 ))).run(conn);
                          //What to do if they have a valid account but not google Authy Setup
                          System.out.println("What action will you be completing?: ");
@@ -331,7 +332,8 @@ public class UserInput {
                            System.out.println("What do you think this is?\n a infiti bank?");
                    }
                          }
-                   }//End Withdraw
+                   } //End Of Bank Action
+                
                    
                 if (bankaction1.equals("2")){
                        System.out.println("You're Checkings Account - balance is:" + (getchecking));
