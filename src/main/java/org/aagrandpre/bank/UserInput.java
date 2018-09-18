@@ -41,6 +41,7 @@ import static org.aagrandpre.bank.Database.r;
  * September 12th 2018 - Rebuilt Login Around RethinkDB & Google Authenticator
  * September 13th 2018 - Built Withdraw With Google Authenticator for withdraws over 3,000
  * September 13th 2018 - Built deposit function along with logging for deposit and Withdraw
+ * September 14th-Onward 2018 - All changes are now stored in GitHub Commits
  * 
  * To-Do List
  * Transfer Funds From One User To Another
@@ -171,10 +172,9 @@ public class UserInput {
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
                             int code = scan.nextInt();
-                            
+                            String str1 = scan.nextLine();
                             GoogleAuthenticator gAuth = new GoogleAuthenticator();
                             if(gAuth.authorize((gkey), (code))){
-                                {
                          r.db("APSCI").table("BankAccountLogs").insert(
                            (r.array(
                             r.hashMap("username", (username))
@@ -183,7 +183,7 @@ public class UserInput {
                                 .with("Timestamp", (timestamp))
                                 .with("GCode", (code))
                                 ))).run(conn);
-                         //What to do if they have a valid account but not google Authy Setup
+                         //What to do if they have a valid account &/Or Google Auth Setup & Validated
                          System.out.println("What action will you be completing?: ");
                                 System.out.println("1 - Withdraw Funds");
                                 System.out.println("2 - Deposit Funds");
@@ -191,7 +191,8 @@ public class UserInput {
                                 System.out.println("4 - Settings");
                                 System.out.println("5 - Admin Portal");
                                 String bankaction1 = scan.nextLine();
-                                
+                                {
+                                    //What to do if they want to withdraw funds
                    if (bankaction1.equals("1")){
                     //What do if the user wants to withdraw funds
                     //Grabs Username From UserInput
@@ -332,9 +333,7 @@ public class UserInput {
                            System.out.println("What do you think this is?\n a infiti bank?");
                    }
                          }
-                   } //End Of Bank Action
-                
-                   
+                         
                 if (bankaction1.equals("2")){
                        System.out.println("You're Checkings Account - balance is:" + (getchecking));
                    System.out.println("You're Savings Account - balance is:" + (getsavings));
@@ -419,13 +418,14 @@ public class UserInput {
                 }
                 }
                    
-                                }
+                            
+                            } //End Of User Input!
                            
                }else {
                     //What to do if they don't pick a valid Gkey
                     System.out.println("Invalid Gkey!");
                 }
-    
+                          }
                     }else {
                          //What to do if username doesn't equal or password to DB
                          r.db("APSCI").table("BankAccountLogs").insert(
