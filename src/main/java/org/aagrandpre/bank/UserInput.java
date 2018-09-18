@@ -171,8 +171,8 @@ public class UserInput {
                                   .isEmpty()
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
-                            int code = scan.nextInt();
-                            String str1 = scan.nextLine();
+                            int code = Integer.parseInt(scan.nextLine());
+                            
                             GoogleAuthenticator gAuth = new GoogleAuthenticator();
                             if(gAuth.authorize((gkey), (code))){
                          r.db("APSCI").table("BankAccountLogs").insert(
@@ -216,7 +216,7 @@ public class UserInput {
                                   .isEmpty()
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
-                            int code1 = scan.nextInt();
+                            int code1 = Integer.parseInt(scan.nextLine());
                             if(gAuth.authorize((gkey), (code1))){
                                 //What to do if they have the correct key and withdraw more then 3000
                                 r.db("APSCI").table("BankAccounts").update(
@@ -281,7 +281,7 @@ public class UserInput {
                                   .isEmpty()
                                     .run(conn)){
                             System.out.println("GoogleAuthCode: ");
-                            int code1 = scan.nextInt();
+                            int code1 = Integer.parseInt(scan.nextLine());
                             if(gAuth.authorize((gkey), (code1))){
                                 //What to do if they have the correct key and withdraw more then 3000
                                 r.db("APSCI").table("BankAccounts").update(
@@ -330,7 +330,8 @@ public class UserInput {
                             System.out.println("Your new balance is: $"+ getsavings1);
                             }
                                      }else{
-                           System.out.println("What do you think this is?\n a infiti bank?");
+                            //What to do if the user wants more then what they have in their account!
+                           System.out.println("Notice, You're Withdraw Request Failed!\nLikely due to you're request was more then your balance!");
                    }
                          }
                          
