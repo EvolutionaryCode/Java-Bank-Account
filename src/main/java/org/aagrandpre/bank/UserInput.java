@@ -3,6 +3,7 @@ package org.aagrandpre.bank;
 //Import Java Tools
 import java.util.Scanner;
 //Import RethinkDB Tools
+import static org.aagrandpre.bank.Database.r;
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.gen.ast.Table;
 import com.rethinkdb.gen.exc.ReqlError;
@@ -19,7 +20,6 @@ import java.time.OffsetDateTime;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import java.util.List;
-import static org.aagrandpre.bank.Database.r;
 
 /**
  * Student Number - 1-7
@@ -240,7 +240,7 @@ public class UserInput {
                             System.out.println("Your new balance is: $"+ getchecking1);
                             }
                                      }else{
-                                         //What to do if they don't have 2FA and want 3000 or grater
+                                        System.out.println("Urgent Notice!\nYoure Withdraw Couldn't Be Comepleted Due To:\nYou tried to withdraw more then 3000$ without 2FA\nIf you would like to setup 2FA type Auth back on the main screen!");
                                      }
                             }else {
                                          //What to do if it's under 3,000
@@ -283,7 +283,8 @@ public class UserInput {
                             System.out.println("GoogleAuthCode: ");
                             int code1 = Integer.parseInt(scan.nextLine());
                             
-                            if(gAuth.authorize((gkey), (code1))){
+                            GoogleAuthenticator gAuth1 = new GoogleAuthenticator();
+                            if(gAuth1.authorize((gkey), (code1))){
                                 //What to do if they have the correct key and withdraw more then 3000
                                 r.db("APSCI").table("BankAccounts").update(
                                         r.hashMap("username", (username))
@@ -498,7 +499,7 @@ public class UserInput {
                         )).run(conn);
                        }
                          
-                         else {
+                    else {
                            r.db("APSCI").table("BankAccountLogs").insert(
                            (r.array(
                             r.hashMap("attemptedusername", (username))
