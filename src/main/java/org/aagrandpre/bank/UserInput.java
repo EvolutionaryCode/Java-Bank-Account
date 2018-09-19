@@ -92,7 +92,7 @@ public class UserInput {
                 OffsetDateTime timestamp = OffsetDateTime.now();
                 System.out.println(timestamp);
                 //Setup Local Values!
-                String version = "1.1";
+                String version = "1.2";
                 String builder = "Java Console";
                
                 
@@ -206,7 +206,7 @@ public class UserInput {
                    if (withdrawaction.equals("1")){
                        System.out.println("You're checking account ballance is: $" + (getchecking));
                        System.out.println("How much money would you like to withdraw?");    
-                        double amount = scan.nextDouble();
+                        int amount = Integer.parseInt(scan.nextLine());
                        System.out.println("Your withdrawal amount: $" + amount);
                         if((getchecking) >= (amount)){
                             if((amount) >= 3000){ 
@@ -271,7 +271,7 @@ public class UserInput {
                          if (withdrawaction.equals("2")){
                             System.out.println("You're savings account ballance is: $" + (getsavings));
                        System.out.println("How much money would you like to withdraw?");    
-                        double amount = scan.nextDouble();
+                        int amount = Integer.parseInt(scan.nextLine());
                        System.out.println("Your withdrawal amount: $" + amount);
                         if((getsavings) >= (amount)){
                             if((amount) >= 3000){ 
@@ -349,7 +349,7 @@ public class UserInput {
                    if (depositaction.equals("1")){
                        System.out.println("You're checking account ballance is: $" + (getchecking));
                        System.out.println("How much money would you like to deposit?");    
-                        double amount = scan.nextDouble();
+                        int amount = Integer.parseInt(scan.nextLine());
                        System.out.println("Your deposit amount: $" + amount);
                         if((currenfunds) >= (amount)){
                             r.db("APSCI").table("BankAccountLogs").insert(
@@ -380,7 +380,7 @@ public class UserInput {
                           if (depositaction.equals("2")){
                              System.out.println("You're savings account ballance is: $" + (getsavings));
                        System.out.println("How much money would you like to deposit?");    
-                        double amount1 = scan.nextDouble();
+                        int amount1 = Integer.parseInt(scan.nextLine());
                        System.out.println("Your deposit amount: $" + amount1);
                         if((currenfunds) >= (amount1)){
                             r.db("APSCI").table("BankAccounts").update(
