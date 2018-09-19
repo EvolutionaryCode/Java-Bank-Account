@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 //Auth
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import static org.aagrandpre.bank.Database.r;
 
 /**
  * Student Number - 1-7
@@ -37,36 +38,114 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 
 public class UserInput {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+    
+    //Checking User Entered Cradenciaals Vs Database
+     private static boolean checklogin(String username, String password) {
+        //What to do if we need to check their login
+        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
+        r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
+                             .and(row.g("password").eq(password)))
+                             .isEmpty().not()
+                             .run(conn);
+                return true;
+                }
+     //Checking if the User has Gkey Setup
+     private static boolean checkGkeySetup(String username) {
+        //What to do if we need to check their login
+        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
+        r.db("APSCI").table("BankAccounts").filter(row ->
+                row.g("username").eq(username)
+                                .and(row.g("gkey").eq("false")
+                                )).isEmpty().not().run(conn);
+        return true;
+     }
+     
+     private static boolean storeGkey(String username) {
+        //What to do if we need to check their login
+        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
+         r.db("APSCI").table("BankAccounts").update(
+                            r.hashMap("username", (username))
+                                .with("gkey",(key.getKey()))
+                                ).run(conn);
+        return true;
+     }
+     
+     //Grabing the Users Gkey
+     private static int grabGkey(String username) {
+        //What to do if we need to check their login
+        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
+        int gkey = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("gkey").nth(0)
+                             .run(conn);
+        return gkey; //Returns The Gkey From The Database
+     }
+     
+     private static boolean checkGkey(int gkey, int code) {
+        //What to do if we need to check their login
+        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
+        //Put the G-Code Checker
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+              if(gAuth.authorize((gkey), (code))){
+                  //
+        
+              }
+              return true;
+     }
+     
+     
+     
         public static void main(String[] args)
-        {
-            Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect();           
+        {         
             //Setup Scanner
                 Scanner scan = new Scanner(System.in);
                 //Setup Timestamp
                 OffsetDateTime timestamp = OffsetDateTime.now();
-                System.out.println(timestamp);
-                //Setup Local Values!
-                String version = "1.2";
+                //Setup Variables
+                 String version = "1.2";
                 String builder = "Java Console";
-               
+                //Shows Current Version
+                System.out.println(version);
                 
                 //Decide what the scanner will be looking for
                 System.out.println("What action will you be completing?: ");
                 String action = scan.nextLine();
-               
-                //Scans For Action Requests
-                
+        
+                //Client For Auth
                 if (action.equals("Auth")){
                          System.out.println("Username: ");
-                         String authuser = scan.nextLine();
+                         String username = scan.nextLine();
                          System.out.println("Password: ");
-                         String authpass = scan.nextLine();
-                             if (r.db("APSCI").table("BankAccounts").filter(row ->
-                         row.g("username").eq(authuser)
-                                 .and(row.g("password").eq(authpass)
-                                 .and(row.g("gkey").eq("false")
-                                 ))).isEmpty().not().run(conn)){
-                                 //Put code here for if they need to hook up their account
+                         String password = scan.nextLine();
+                          if(checklogin(username, password)){
+                          //What to do if they have a valid username & password
+                          if(checkGkeySetup(username)){
+                              //What to do if the user has no Gkey & Google Authenicator Isn't Setup
+                           GoogleAuthenticator gAuth = new GoogleAuthenticator();
+                           GoogleAuthenticatorKey key = gAuth.createCredentials();
+                           System.out.println("You're Google Authentication Code Is:" + key.getKey());
+                           
+                           System.out.println("Google Authentication Setup\nIn order to verify you have set it up correctly\nEnter the Six Diget code");
+                           
+                          }else {
+                              //What to do if the user already has a Gkey & Google Authenticator Setup
+                              System.out.println("Authentication Setup Failed!\nYour username already has a valid GoogleKey our records show!");
+                          }
+                }else {
+                      System.out.println("Login Failed!\nYour username or password did not match our records");
+                          }
+                          //End of the Auth Section
+                } else if (action.equals("2")){
+                    //What to do if the user picks to Login into the bank!
+                }
+        } //end action method/main method
+         
+        
+         
+
+                
+                           
                            GoogleAuthenticator gAuth = new GoogleAuthenticator();
                            GoogleAuthenticatorKey key = gAuth.createCredentials();
                            System.out.println("You're Google Authentication Code Is:" + key.getKey());
@@ -79,7 +158,6 @@ public class UserInput {
                              else {
                                  System.out.println("We have decteted that you have either:\n Don't have a valid account or Have already setup authy");
                              }
-                }
                              
                     if (action.equals("Login")){
                        //Login Action
@@ -394,7 +472,7 @@ public class UserInput {
                                 ))).run(conn);
                          System.out.println("No User Was Found! We have logged your information\n Or, you entered you're password inccorectly!");
                      }
-                    }//End Of Login Section
+                    }//End Of Login Section//End Of Login Section
                           
                    
                      
@@ -468,6 +546,35 @@ public class UserInput {
                     conn.close();
                     }
         }
+        
+        //New Methods For Checking For Login & Such
+        
+         private static void checklogin() {
+        //What to do if we need to check their login
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+         
+        private static void grabgkey(int gkey, String username) {
+        //What to do if we need to grab their Google Jet From RethinkDB 
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+         
+        private static void checkauth(int gkey) {
+        //What to do if we need to check their auth code 
+      
+    } 
+        private static void setupauth(String password, String username) {
+        //What to do if we need to check their auth code 
+            
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+        
+        System.out.println("Username: ");
+                         String authuser = scan.nextLine();
+                         System.out.println("Password: ");
+                         String authpass = scan.nextLine();
+    }
+
 }
                
 
