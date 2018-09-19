@@ -38,10 +38,12 @@ import static org.aagrandpre.bank.Database.r;
 
 public class UserInput {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-    private static final Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect();
+    private static final Connection conn = r.connection().hostname("putyouriphere").port(28015).connect();
+    
+    //Checking Stored Information - Boolean
     
     //Checking User Entered Cradenciaals Vs Database
-     private static boolean checklogin(String username, String password) {
+     private static boolean checkLogin(String username, String password) {
         //What to do if we need to check their login
         r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username)
@@ -59,6 +61,41 @@ public class UserInput {
                                 )).isEmpty().not().run(conn);
         return true;
      }
+     //Checking the users G-Code Against The Gkey
+     private static boolean checkGkey(String gkey, int code) {
+        //G-Code Checker Vs. G-Key
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+              if (gAuth.authorize(gkey, code));
+              //What to do if the gkey = code
+              return true;
+     }
+     
+     //Grabing User Data/Keys
+     
+     //Grabing the Users Gkey
+     private static String grabGkey(String username) {
+        //What to do if we need to check their login
+        String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("gkey").nth(0)
+                             .run(conn);
+        //Returns The Gkey From The Database as a String
+        return gkey; 
+     }
+     //Grabing the Users Name
+     private static String grabName(String username) {
+        //What to do if we need to check their login
+        String accname = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("name").nth(0)
+                             .run(conn);
+        //Returns The Gkey From The Database as a String
+        return accname; 
+     }
+     
+     
+     //Storing Data
+     
      //Storing the Users GKey into RethinkDB
      private static boolean storeGkey(String username, String gkey) {
         //What to do if we need to store a Gkey
@@ -70,23 +107,12 @@ public class UserInput {
                                 )).run(conn);
         return true;
      }
-     //Grabing the Users Gkey
-     private static String grabGkey(String username) {
-        //What to do if we need to check their login
-        String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
-                         row.g("username").eq(username))
-                             .g("gkey").nth(0)
-                             .run(conn);
-        //Returns The Gkey From The Database as a String
-        return gkey; 
-     }
-     //Checking the users G-Code Against The Gkey
-     private static boolean checkGkey(String gkey, int code) {
-        //G-Code Checker Vs. G-Key
-        GoogleAuthenticator gAuth = new GoogleAuthenticator();
-              if (gAuth.authorize(gkey, code));
-              //What to do if the gkey = code
-              return true;
+     
+     //Logging Data
+     private static boolean logGkeySetup(String username, String gkey) {
+        //What to do if we need to store a Google Auth Setup Log
+         
+        return true;
      }
      
      
@@ -113,7 +139,7 @@ public class UserInput {
                          String username = scan.nextLine();
                          System.out.println("Password: ");
                          String password = scan.nextLine();
-                          if(checklogin(username, password)){
+                          if(checkLogin(username, password)){
                           //What to do if they have a valid username & password
                           if(checkGkeySetup(username)){
                               //What to do if the user has no Gkey & Google Authenicator Isn't Setup
@@ -124,7 +150,7 @@ public class UserInput {
                            
                            System.out.println("Google Authentication Setup\nIn order to verify you have set it up correctly\nEnter the Six Diget code");
                            int code = Integer.parseInt(scan.nextLine());
-                          if(checkGkey(gkey, code)){
+                            if(checkGkey(gkey, code)){
                               //What to do if the Gkey is properly setup
                               System.out.println("Google Authentication Setup Complete\nGoogle Authenticator (2fa) has been setup, you understand that by enabling this:\nYou realize that it is your job to rember your 2FA setup\nAlong with we provide no support for lost Auth Keys");
                               storeGkey(username, gkey);
@@ -148,13 +174,32 @@ public class UserInput {
                          String username = scan.nextLine();
                          System.out.println("Password: ");
                          String password = scan.nextLine();
-                          if(checklogin(username, password)){
+                          if(checkLogin(username, password)){
                           //What to do if they have a valid username & password
                            if(checkGkeySetup(username)){
                                //What to do if they don't have 2FA Setup/Enabled!
+                               System.out.println("One Second, Given We Are Finding You're Information Wait A Momment");
+                               //Grabing User Information
+                               String name = (grabName(username));
+                               
+                               
                            }else {
                                //What to do if the user has 2FA Enabled
+                               System.out.println("One Second, Given We Are Finding You're Gkey Wait A Momment");
+                               //Grabs Gkey From RethinkDB
+                               String gkey = (grabGkey(username));
+                               //Request 2FA Code/Store It
                                System.out.println("Given That This Account Has 2FA Enabled\n Please enter in the 2FA Code!");
+                               int code = Integer.parseInt(scan.nextLine()); 
+                               //Send To checkGkey
+                               if(checkGkey(gkey, code)){
+                              //What to do if the Gkey and the code match
+                              System.out.println("Java Bank Welcomes You!");
+                              
+                          } else {
+                             //What to do if the Gkey doesn't match the code!
+                             System.out.println("Error 403\nEror - Not Correct Code To Go With Google Key!");
+                          }
                                
                            }
                            }else {
