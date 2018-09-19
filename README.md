@@ -41,3 +41,8 @@ If you request to Push a change to improve the project feel free and all changes
  * Database - RethinkDB (Open Source NoSQL Database)
  * Auth - Google Authenticator (Created By Google)
  * Auth - Google Java Authenticator Connect (Created by Warrenstrange)
+ 
+ <h1>Want to watch a Video?</h1>
+ <a href="http://www.youtube.com/watch?feature=player_embedded&v=4oRgHxUeBY4
+" target="_blank"><img src="http://img.youtube.com/vi/4oRgHxUeBY4/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
