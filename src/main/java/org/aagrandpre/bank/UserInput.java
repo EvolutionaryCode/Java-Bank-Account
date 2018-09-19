@@ -271,7 +271,7 @@ public class UserInput {
                          if (withdrawaction.equals("2")){
                             System.out.println("You're savings account ballance is: $" + (getsavings));
                        System.out.println("How much money would you like to withdraw?");    
-                        int amount = Integer.parseInt(scan.nextLine());
+                         int amount = Integer.parseInt(scan.nextLine());
                        System.out.println("Your withdrawal amount: $" + amount);
                         if((getsavings) >= (amount)){
                             if((amount) >= 3000){ 
@@ -337,7 +337,7 @@ public class UserInput {
                            System.out.println("Notice, You're Withdraw Request Failed!\nLikely due to you're request was more then your balance!");
                    }
                          }
-                         
+                   }
                 if (bankaction1.equals("2")){
                        System.out.println("You're Checkings Account - balance is:" + (getchecking));
                    System.out.println("You're Savings Account - balance is:" + (getsavings));
@@ -399,7 +399,7 @@ public class UserInput {
                                                 ))).run(conn);
                                  double getsavings2 = r.db("APSCI").table("BankAccounts").filter(row ->
                                 row.g("username").eq(username))
-                                    .g("checkingbal").nth(0)
+                                    .g("savingsbal").nth(0)
                                     .run(conn);
                             System.out.println("Your new balance is: $"+ getsavings2);
                         } else {
@@ -419,7 +419,6 @@ public class UserInput {
                 if (bankaction1.equals("5")){
                     //What do if the user wants to access the Admin Pannel
                     System.out.println("We have not yet setup the admin pannel");
-                }
                 }
                    
                             
