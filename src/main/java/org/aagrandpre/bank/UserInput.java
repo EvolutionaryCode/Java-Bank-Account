@@ -38,11 +38,11 @@ import static org.aagrandpre.bank.Database.r;
 
 public class UserInput {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+    private static final Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect();
     
     //Checking User Entered Cradenciaals Vs Database
      private static boolean checklogin(String username, String password) {
         //What to do if we need to check their login
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
         r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username)
                              .and(row.g("password").eq(password)))
@@ -53,44 +53,39 @@ public class UserInput {
      //Checking if the User has Gkey Setup
      private static boolean checkGkeySetup(String username) {
         //What to do if we need to check their login
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
         r.db("APSCI").table("BankAccounts").filter(row ->
                 row.g("username").eq(username)
                                 .and(row.g("gkey").eq("false")
                                 )).isEmpty().not().run(conn);
         return true;
      }
-     
-     private static boolean storeGkey(String username) {
-        //What to do if we need to check their login
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
-         r.db("APSCI").table("BankAccounts").update(
+     //Storing the Users GKey into RethinkDB
+     private static boolean storeGkey(String username, String gkey) {
+        //What to do if we need to store a Gkey
+         r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                         .update(
                             r.hashMap("username", (username))
-                                .with("gkey",(key.getKey()))
-                                ).run(conn);
+                                .with("gkey",(gkey)
+                                )).run(conn);
         return true;
      }
-     
      //Grabing the Users Gkey
-     private static int grabGkey(String username) {
+     private static String grabGkey(String username) {
         //What to do if we need to check their login
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
-        int gkey = r.db("APSCI").table("BankAccounts").filter(row ->
+        String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
                              .g("gkey").nth(0)
                              .run(conn);
-        return gkey; //Returns The Gkey From The Database
+        //Returns The Gkey From The Database as a String
+        return gkey; 
      }
-     
-     private static boolean checkGkey(int gkey, int code) {
-        //What to do if we need to check their login
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect(); //Setup RethinkDB Connection
-        //Put the G-Code Checker
+     //Checking the users G-Code Against The Gkey
+     private static boolean checkGkey(String gkey, int code) {
+        //G-Code Checker Vs. G-Key
         GoogleAuthenticator gAuth = new GoogleAuthenticator();
-              if(gAuth.authorize((gkey), (code))){
-                  //
-        
-              }
+              if (gAuth.authorize(gkey, code));
+              //What to do if the gkey = code
               return true;
      }
      
@@ -109,11 +104,11 @@ public class UserInput {
                 System.out.println(version);
                 
                 //Decide what the scanner will be looking for
-                System.out.println("What action will you be completing?: ");
+                System.out.println("What action will you be completing?: \n1 - Setup Google Authenticator\n2 - Login To The Bank\n3 - Register A New Account");
                 String action = scan.nextLine();
         
                 //Client For Auth
-                if (action.equals("Auth")){
+                if (action.equals("1")){
                          System.out.println("Username: ");
                          String username = scan.nextLine();
                          System.out.println("Password: ");
@@ -124,47 +119,56 @@ public class UserInput {
                               //What to do if the user has no Gkey & Google Authenicator Isn't Setup
                            GoogleAuthenticator gAuth = new GoogleAuthenticator();
                            GoogleAuthenticatorKey key = gAuth.createCredentials();
-                           System.out.println("You're Google Authentication Code Is:" + key.getKey());
+                           String gkey = key.getKey();
+                           System.out.println("You're Google Authentication Code Is:" + (gkey));
                            
                            System.out.println("Google Authentication Setup\nIn order to verify you have set it up correctly\nEnter the Six Diget code");
+                           int code = Integer.parseInt(scan.nextLine());
+                          if(checkGkey(gkey, code)){
+                              //What to do if the Gkey is properly setup
+                              System.out.println("Google Authentication Setup Complete\nGoogle Authenticator (2fa) has been setup, you understand that by enabling this:\nYou realize that it is your job to rember your 2FA setup\nAlong with we provide no support for lost Auth Keys");
+                              storeGkey(username, gkey);
+                          } else {
+                             //What to do if the Gkey isn't properly setup
+                             System.out.println("Google Authentication Setup Failed\nGoogle Authenticator failed given you didn't have the secret key setup properly");
+                          }
                            
                           }else {
                               //What to do if the user already has a Gkey & Google Authenticator Setup
                               System.out.println("Authentication Setup Failed!\nYour username already has a valid GoogleKey our records show!");
-                          }
-                }else {
-                      System.out.println("Login Failed!\nYour username or password did not match our records");
+                                  }
+                          }else {
+                              //What to do if their username & password isn't valid
+                              System.out.println("Login Failed!\nYour username or password did not match our records");
                           }
                           //End of the Auth Section
                 } else if (action.equals("2")){
                     //What to do if the user picks to Login into the bank!
-                }
+                     System.out.println("Username: ");
+                         String username = scan.nextLine();
+                         System.out.println("Password: ");
+                         String password = scan.nextLine();
+                          if(checklogin(username, password)){
+                          //What to do if they have a valid username & password
+                           if(checkGkeySetup(username)){
+                               //What to do if they don't have 2FA Setup/Enabled!
+                           }else {
+                               //What to do if the user has 2FA Enabled
+                               System.out.println("Given That This Account Has 2FA Enabled\n Please enter in the 2FA Code!");
+                               
+                           }
+                           }else {
+                              //What to do if they don't have a valid username & password
+                          }
+                } 
+                //End of Login Section
         } //end action method/main method
          
         
          
 
                 
-                           
-                           GoogleAuthenticator gAuth = new GoogleAuthenticator();
-                           GoogleAuthenticatorKey key = gAuth.createCredentials();
-                           System.out.println("You're Google Authentication Code Is:" + key.getKey());
-                           //Inputs The Secret Auth Key To Databate
-                           r.db("APSCI").table("BankAccounts").update(
-                            r.hashMap("username", (authuser))
-                                .with("gkey",(key.getKey()))
-                                ).run(conn);
-                       }
-                             else {
-                                 System.out.println("We have decteted that you have either:\n Don't have a valid account or Have already setup authy");
-                             }
-                             
-                    if (action.equals("Login")){
-                       //Login Action
-                            System.out.println("Username: ");
-                            String username = scan.nextLine();
-                            System.out.println("Password: ");
-                            String password = scan.nextLine();
+                          
                     
                       //Login Validation
                       //Do Get Google Authenticator Key From Database     
