@@ -2,6 +2,7 @@
 package org.aagrandpre.bank;
 //Import Java Tools
 import java.util.Scanner;
+import java.util.List;
 //Import RethinkDB Tools
 import static org.aagrandpre.bank.Database.r;
 import com.rethinkdb.RethinkDB;
@@ -19,7 +20,6 @@ import java.time.OffsetDateTime;
 //Auth
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-import java.util.List;
 
 /**
  * Student Number - 1-7
