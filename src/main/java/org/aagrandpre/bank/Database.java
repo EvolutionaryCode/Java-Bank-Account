@@ -11,6 +11,6 @@ public class Database {
      public static RethinkDB r = RethinkDB.r; static {
      }
     public static void main(String[] args) {
-        Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect();
+        Connection conn = r.connection().hostname("YourIPAddress").port(28015).connect();
     }
 }
