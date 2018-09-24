@@ -39,7 +39,7 @@ public class UserInput {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
         public static void main(String[] args)
         {
-            Connection conn = r.connection().hostname("73.21.110.242").port(28015).connect();           
+            Connection conn = r.connection().hostname("Your IP GoesHere").port(28015).connect();           
             //Setup Scanner
                 Scanner scan = new Scanner(System.in);
                 //Setup Timestamp
