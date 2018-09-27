@@ -16,12 +16,10 @@ import com.rethinkdb.net.Cursor;
 //Timestamp Imports
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
-import java.sql.Time;
 
 //Auth
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-
 
 /**
  * Student Number - 1-7
@@ -39,27 +37,28 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 
 public class UserInput {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-    private static final Connection conn = r.connection().hostname("putyouriphere").port(28015).connect();
-    
-    public static void main(String[] args)
-        {         
+    private static final Connection conn = r.connection().hostname("youripgoeshere").port(28015).connect();
+        public static void main(String[] args)
+        {          
             //Setup Scanner
                 Scanner scan = new Scanner(System.in);
                 //Setup Timestamp
                 OffsetDateTime timestamp = OffsetDateTime.now();
-                //Setup Variables
-                 String version = "1.2";
-                 String builder = "Java Console";
-                //Shows Current Version
-                System.out.println(version);
+                System.out.println(timestamp);
+                //Setup Local Values!
+                String version = "1.2";
+                String builder = "Java Console";
+               
+                
                 
                 //Decide what the scanner will be looking for
-                System.out.println("What action will you be completing?: \n1 - Setup Google Authenticator\n2 - Login To The Bank\n3 - Register A New Account");
+                System.out.println("What action will you be completing?: ");
                 String action = scan.nextLine();
-        
-                //Client For Auth
-                if (action.equals("1")){
-                         System.out.println("Username: ");
+               
+                //Scans For Action Requests
+                
+                if (action.equals("Auth")){
+                           System.out.println("Username: ");
                          String username = scan.nextLine();
                          System.out.println("Password: ");
                          String password = scan.nextLine();
@@ -79,8 +78,9 @@ public class UserInput {
                               System.out.println("Google Authentication Setup Complete\nGoogle Authenticator (2fa) has been setup, you understand that by enabling this:\nYou realize that it is your job to rember your 2FA setup\nAlong with we provide no support for lost Auth Keys");
                               //Store Gkey under username in RethinkDB
                               storeGkey(username, gkey);
+                              System.out.println("We have stored you're Gkey Successfuly!");
                               //Log the Gkey under logs for that username
-                              logGkeySetup(username, gkey, version, timestamp);
+                             // Not Yet Setup logGkeySetup(username, gkey, version, timestamp);
                           } else {
                              //What to do if the Gkey isn't properly setup
                              System.out.println("Google Authentication Setup Failed\nGoogle Authenticator failed given you didn't have the secret key setup properly");
@@ -94,237 +94,80 @@ public class UserInput {
                               //What to do if their username & password isn't valid
                               System.out.println("Login Failed!\nYour username or password did not match our records");
                           }
-                          //End of the Auth Section
-                } else if (action.equals("2")){
-                    //What to do if the user picks to Login into the bank!
-                     System.out.println("Username: ");
-                         String username = scan.nextLine();
-                         System.out.println("Password: ");
-                         String password = scan.nextLine();
-                          if(checkLogin(username, password)){
-                          //What to do if they have a valid username & password
-                           if(checkGkeySetup(username)){
-                               //What to do if they don't have 2FA Setup/Enabled!
-                               System.out.println("One Second, Given We Are Finding You're Information Wait A Momment");
-                               //Grabing User Information
-                               String name = (grabName(username));
-                               double checkingbal = (grabCheckingbal(username));
-                               double savingsbal = (grabSavingsbal(username));
-                               
-                               System.out.println("What action will you be completing?\n1 - Withdraw Funds\n2 - Deposit Funds\n3 - Transfer Funds(Comming Soon!)\n4 - Settings(Comming Soon!)\n5 - Admin Portal(Comming Soon!)");
-                                String bankaction = scan.nextLine();
-                                
-                                if (bankaction.equals("1")){
-                                    //What to do if they want to withdraw funds
-                                     System.out.println("You're Checkings Account - balance is: $" + (checkingbal));
-                                     System.out.println("You're Savings Account - balance is: $" + (savingsbal));
-                                     //Setup What account they want to pick
-                                     System.out.println("What account would you like to withdraw funds from?\n1 - Checking Account\n2 - Savings Account");
-                                     //Create What Account Scanner
-                                     String withdrawaction = scan.nextLine();
-                                     
-                                } //End of Withdraw Funds Action
-                                else if (bankaction.equals("2")) {
-                                    //What to do if they want to deposit funds
-                                }//End of Deposit Funds Action 
-                                else if (bankaction.equals("3")) {
-                                    //What to do if they want to transfer funds
-                                }
-                                else if (bankaction.equals("4")) {
-                                    //What to do if they want to change settings
-                                }
-                                else if (bankaction.equals("5")) {
-                                    //What to do if they want to access the admin panel side
-                                }
-                                else{
-                                    //What to do if the user picks anything other then the options we have given them
-                                }
-                           
-                               
-                           }else {
-                               //What to do if the user has 2FA Enabled
-                               System.out.println("One Second, Given We Are Finding You're Gkey Wait A Momment");
-                               //Grabs Gkey From RethinkDB
-                               String gkey = (grabGkey(username));
-                               //Request 2FA Code/Store It
-                               System.out.println("Given That This Account Has 2FA Enabled\n Please enter in the 2FA Code!");
-                               int code = Integer.parseInt(scan.nextLine()); 
-                               //Send To checkGkey
-                               if(checkGkey(gkey, code)){
-                              //What to do if the Gkey and the code match
-                              System.out.println("Java Bank Welcomes You!");
-                              
-                          }else {
-                             //What to do if the Gkey doesn't match the code!
-                             System.out.println("Error 403\nEror - Not Correct Code To Go With Google Key!");
-                          }
-                               
-                           }
-                           }else {
-                              //What to do if they don't have a valid username & password
-                          }
-                } //End of Login Section
-                else if (action.equals("3")){
-                    //What to do if the user wants to Register for a New account
-                    System.out.println("Welcome To Java Bank Registration!\nWe need to first make sure another account doesn't exist with the username you would like!\nSo, enter in you're requested username...");
-                    System.out.println("Username: ");
-                         String username = scan.nextLine();
-                         if(checkUsername(username)){
-                             //What to do if there is no user account with that name
+                          
+                } //End of the Auth Section
                              
-                         }else {
-                             //What to do if there is already a user account with that name
-                             
-                             System.out.println("Java Bank Registration - Error 403\nWe have detcted that you have tried to create an account with the same username as someone else!\nWe have logged this attempt and information and have not created you an account!");
-                         }
-                }
-                //End of Register Section
-        } //end action method/main method
-    
-    //Bank Account Actions
-    
-    //Checking Stored Information - Boolean
-    //Checking User Entered Cradenciaals Vs Database
-     private static boolean checkLogin(String username, String password) {
-        //What to do if we need to check their login
-        r.db("APSCI").table("BankAccounts").filter(row ->
-                         row.g("username").eq(username)
-                             .and(row.g("password").eq(password)))
-                             .isEmpty().not()
-                             .run(conn);
-                return true;
-                }
-     //Checking For Requested Username Vs Database
-     private static boolean checkUsername(String username) {
-        //What to do if the user wants to register a new account
-        
-                return true;
-                }
-     //Checking if the User has Gkey Setup
-     private static boolean checkGkeySetup(String username) {
-        //What to do if we need to check their login
-        r.db("APSCI").table("BankAccounts").filter(row ->
-                row.g("username").eq(username)
-                                .and(row.g("gkey").eq("false")
-                                )).isEmpty().not().run(conn);
-        return true;
-     }
-     //Checking the users G-Code Against The Gkey
-     private static boolean checkGkey(String gkey, int code) {
-        //G-Code Checker Vs. G-Key
-        GoogleAuthenticator gAuth = new GoogleAuthenticator();
-              if (gAuth.authorize(gkey, code));
-              //What to do if the gkey = code
-              return true;
-     }
-     //Checking if the user wants their bal to be shown when on the home screen
-     private static boolean checkShowbal(String username) {
-        //Checking if thet want thier bal to be shown
-        r.db("APSCI").table("BankAccounts").filter(row ->
-                         row.g("username").eq(username)
-                             .and(row.g("balshow").eq(true)))
-                             .isEmpty().not()
-                             .run(conn);
-                return true;
-                }
-     
-     //Grabing User Data/Key
-     //Grabing the Users Gkey
-     private static String grabGkey(String username) {
-        //What to do if we need to get the users Gkey
-        String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
+                    if (action.equals("Login")){
+                       //Login Action
+                            System.out.println("Username: ");
+                            String username = scan.nextLine();
+                            System.out.println("Password: ");
+                            String password = scan.nextLine();
+                    
+                      //Login Validation
+                      //Do Get Google Authenticator Key From Database     
+                      String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
                              .g("gkey").nth(0)
                              .run(conn);
-        //Returns The Gkey From The Database as a String
-        return gkey; 
-     }
-     //Grabing the Users Name
-     private static String grabName(String username) {
-        //What to do if we need to grab their name from username
-        String accname = r.db("APSCI").table("BankAccounts").filter(row ->
+                      //Do Get Name From Username
+                      String name = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
-                             .g("name").nth(0)
+                              .g("name").nth(0)
                              .run(conn);
-        //Returns The Gkey From The Database as a String
-        return accname; 
-     }
-     //Grabing the Checking Bal
-     private static double grabCheckingbal(String username) {
-        //What to do if we need to grab their checking balance from username
-        double checkingbal = r.db("APSCI").table("BankAccounts").filter(row ->
+                      //Do get Savings bal from Username
+                      double getsavings = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
-                             .g("checkingbal").nth(0)
+                              .g("savingsbal").nth(0)
                              .run(conn);
-        //Returns The Checking Balance From The Database as a double
-        return checkingbal;
-     }
-     //Grabing the Savings Bal
-     private static double grabSavingsbal(String username) {
-        //What to do if we need to grab their savings balance from username
-        double savingsbal = r.db("APSCI").table("BankAccounts").filter(row ->
+                      //Do get Checking bal from Username
+                      double getchecking = r.db("APSCI").table("BankAccounts").filter(row ->
                          row.g("username").eq(username))
-                             .g("savingsbal").nth(0)
+                              .g("checkingbal").nth(0)
                              .run(conn);
-        //Returns The Savings Balance From The Database as a double
-        return savingsbal;
-     }
-     
-     
-     //Storing Data
-     //Storing the Users GKey into RethinkDB
-     private static boolean storeGkey(String username, String gkey) {
-        //What to do if we need to store a Gkey
-         r.db("APSCI").table("BankAccounts").filter(row ->
-                         row.g("username").eq(username))
-                         .update(
-                            r.hashMap("username", (username))
-                                .with("gkey",(gkey)
-                                )).run(conn);
-        return true;
-     }
-     //Storing a new user into RethinkDB
-     private static boolean newLogin(String username, String language, String password, String showbal) {
-        //What to do if we need to store a new account
-       
-        return true;
-     }
-     
-     //Logging Data
-     //Google Authentication Setup Log
-     private static boolean logGkeySetup(String username, String gkey, String version, sdf timestamp) {
-        //What to do if we need to store a Google Auth Setup Log
-           r.db("APSCI").table("BankAccountLogs").insert(
+                      
+                      double currenfunds = 1000;
+                      
+                    //Checking if user has a valid username & password
+                     if (r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
+                             .and(row.g("password").eq(password)))
+                             .isEmpty().not()
+                             .run(conn)){
+                         //Checking if the user has a google Key
+                          if (r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
+                                 .and(row.g("gkey").eq("false")))
+                                  .isEmpty()
+                                    .run(conn)){
+                            System.out.println("GoogleAuthCode: ");
+                            int code = Integer.parseInt(scan.nextLine());
+                            
+                            GoogleAuthenticator gAuth = new GoogleAuthenticator();
+                            if(gAuth.authorize((gkey), (code))){
+                         r.db("APSCI").table("BankAccountLogs").insert(
                            (r.array(
                             r.hashMap("username", (username))
-                                .with("action", "2FA-Enabled")
+                                .with("action", "Login")
                                 .with("Version",(version))
                                 .with("Timestamp", (timestamp))
-                                .with("GKey", (gkey))
+                                .with("GCode", (code))
                                 ))).run(conn);
-        return true;
-     }
-     
-     
-     
-        
-         
-        
-         
-
-                
-                          
-                    
-                     
-                     
-                      
-                      
-                      
-                    
-                            
-                          
-                         
-                                    
+                         //What to do if they have a valid account &/Or Google Auth Setup & Validated
+                         System.out.println("What action will you be completing?: ");
+                                System.out.println("1 - Withdraw Funds");
+                                System.out.println("2 - Deposit Funds");
+                                System.out.println("3 - Transfer Funds");
+                                System.out.println("4 - Settings");
+                                System.out.println("5 - Admin Portal");
+                                String bankaction1 = scan.nextLine();
+                                {
+                                    //What to do if they want to withdraw funds
+                   if (bankaction1.equals("1")){
+                    //What do if the user wants to withdraw funds
+                    //Grabs Username From UserInput
+                   System.out.println("You're Checkings Account - balance is: $" + (getchecking));
+                   System.out.println("You're Savings Account - balance is: $" + (getsavings));
                    System.out.println("What account would you like to withdraw funds from?");
                    System.out.println("1 - Checking Account");
                    System.out.println("2 - Savings Account");
@@ -567,7 +410,7 @@ public class UserInput {
                                 ))).run(conn);
                          System.out.println("No User Was Found! We have logged your information\n Or, you entered you're password inccorectly!");
                      }
-                    }//End Of Login Section//End Of Login Section
+                    }//End Of Login Section
                           
                    
                      
@@ -641,37 +484,113 @@ public class UserInput {
                     conn.close();
                     }
         }
-        
-        //New Methods For Checking For Login & Such
-        
-         private static void checklogin() {
+         
+    //Bank Account Actions
+    
+    //Checking Stored Information - Boolean
+    //Checking User Entered Cradenciaals Vs Database
+     private static boolean checkLogin(String username, String password) {
         //What to do if we need to check their login
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-         
-        private static void grabgkey(int gkey, String username) {
-        //What to do if we need to grab their Google Jet From RethinkDB 
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-         
-        private static void checkauth(int gkey) {
-        //What to do if we need to check their auth code 
-      
-    } 
-        private static void setupauth(String password, String username) {
-        //What to do if we need to check their auth code 
-            
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+        r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
+                             .and(row.g("password").eq(password)))
+                             .isEmpty().not()
+                             .run(conn);
+                return true;
+                }
+     //Checking For Requested Username Vs Database
+     private static boolean checkUsername(String username) {
+        //What to do if the user wants to register a new account
         
-        System.out.println("Username: ");
-                         String authuser = scan.nextLine();
-                         System.out.println("Password: ");
-                         String authpass = scan.nextLine();
-    }
-
+                return true;
+                }
+     //Checking if the User has Gkey Setup
+     private static boolean checkGkeySetup(String username) {
+        //What to do if we need to check their login
+        r.db("APSCI").table("BankAccounts").filter(row ->
+                row.g("username").eq(username)
+                                .and(row.g("gkey").eq("false")
+                                )).isEmpty().not().run(conn);
+        return true;
+     }
+     //Checking the users G-Code Against The Gkey
+     private static boolean checkGkey(String gkey, int code) {
+        //G-Code Checker Vs. G-Key
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+              if (gAuth.authorize(gkey, code));
+              //What to do if the gkey = code
+              return true;
+     }
+     //Checking if the user wants their bal to be shown when on the home screen
+     private static boolean checkShowbal(String username) {
+        //Checking if thet want thier bal to be shown
+        r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username)
+                             .and(row.g("balshow").eq(true)))
+                             .isEmpty().not()
+                             .run(conn);
+                return true;
+                }
+     
+     //Grabing User Data/Key
+     //Grabing the Users Gkey
+     private static String grabGkey(String username) {
+        //What to do if we need to get the users Gkey
+        String gkey = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("gkey").nth(0)
+                             .run(conn);
+        //Returns The Gkey From The Database as a String
+        return gkey; 
+     }
+     //Grabing the Users Name
+     private static String grabName(String username) {
+        //What to do if we need to grab their name from username
+        String accname = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("name").nth(0)
+                             .run(conn);
+        //Returns The Gkey From The Database as a String
+        return accname; 
+     }
+     //Grabing the Checking Bal
+     private static double grabCheckingbal(String username) {
+        //What to do if we need to grab their checking balance from username
+        double checkingbal = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("checkingbal").nth(0)
+                             .run(conn);
+        //Returns The Checking Balance From The Database as a double
+        return checkingbal;
+     }
+     //Grabing the Savings Bal
+     private static double grabSavingsbal(String username) {
+        //What to do if we need to grab their savings balance from username
+        double savingsbal = r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                             .g("savingsbal").nth(0)
+                             .run(conn);
+        //Returns The Savings Balance From The Database as a double
+        return savingsbal;
+     }
+     
+     
+     //Storing Data
+     //Storing the Users GKey into RethinkDB
+     private static boolean storeGkey(String username, String gkey) {
+        //What to do if we need to store a Gkey
+         r.db("APSCI").table("BankAccounts").filter(row ->
+                         row.g("username").eq(username))
+                         .update(
+                            r.hashMap("username", (username))
+                                .with("gkey",(gkey)
+                                )).run(conn);
+        return true;
+     }
+     //Storing a new user into RethinkDB
+     private static boolean newLogin(String username, String language, String password, String showbal) {
+        //What to do if we need to store a new account
+       
+        return true;
+     }
 }
-               
-
-
-
