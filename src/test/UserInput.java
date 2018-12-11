@@ -158,7 +158,7 @@ public class UserInput {
                                 System.out.println("1 - Withdraw Funds");
                                 System.out.println("2 - Deposit Funds");
                                 System.out.println("3 - Transfer Funds");
-                                System.out.println("4 - Settings");
+                                System.out.println("4 - SettingsGSON");
                                 System.out.println("5 - Admin Portal");
                                 String bankaction1 = scan.nextLine();
                                 {
@@ -588,8 +588,37 @@ public class UserInput {
         return true;
      }
      //Storing a new user into RethinkDB
-     private static boolean newLogin(String username, String language, String password, String showbal) {
+     private static boolean newLogin(String name, String username, String password, String language, Boolean showbal) {
         //What to do if we need to store a new account
+         r.db("APSCI").table("BankAccounts").insert(r.array(
+                 r.hashMap("name", (name))
+                         .with("username", (username))
+                         .with("password", (password))
+                         .with("level", "user")
+                         .with("created", (timestamp))
+                         .with("createdwith", (builder))
+                         .with("savingsbal", 4000000.25)
+                         .with("checkingbal", 100.50)
+                         .with("language", (language))
+                         .with("pin", (pin))
+                         .with("balshow", (showbal))
+                         .with("gkey","false")
+                 /**
+                  * Removed 13th Due to issues will be re-added soon
+                  .with("accounts", r.array(
+                  r.hashMap("account", "savings")
+                  .with("bal", "400"),
+                  r.hashMap("account", "checking")
+                  .with("bal", "300")))
+
+                  .with("settings", r.array(
+                  r.hashMap("lang", (language)),
+                  r.hashMap("pin", (pin)),
+                  r.hashMap("balshow", (showbal))
+                  */
+         )).run(conn);
+     }
+
        
         return true;
      }
