@@ -1,20 +1,30 @@
 package org.aagrandpre.bank.core.utils;
 
-//Project Imports
-import org.aagrandpre.bank.core.utils.Logging;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
+public class SettingsGSON {
+    public SettingsGSON() {
+    }
 
-//Import TOML (Java's JSON)
-import com.moandjiezana.toml.Toml;
-import com.moandjiezana.toml.TomlWriter;
+    public static void main(String[] args) throws IOException, InterruptedException {
+        JSONParser parser = new JSONParser();
 
-//Java Imports
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+        try {
+            Object obj = parser.parse(new InputStreamReader(SettingsGSON.class.getResourceAsStream("/config.json")));
+            JSONObject jsonObject = (JSONObject)obj;
+            //JSONObject arr = (JSONObject)jsonObject.get(0);
+            JSONObject arguments = (JSONObject)jsonObject.get(0);
 
-public class Settings {
+            for(int i = 0; i < arguments.size(); ++i) {
+                JSONObject object = (JSONObject)arguments.get(i);
+                System.out.println(object);
+            }
+        } catch (Exception var8) {
+            var8.printStackTrace();
+        }
 
+    }
 }
