@@ -1,29 +1,27 @@
 package org.aagrandpre.bank.core.utils;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import java.io.BufferedReader;
+        import java.io.FileReader;
+        import java.io.IOException;
+        import com.google.gson.Gson;
 
-public class SettingsGSON {
-    public SettingsGSON() {
-    }
+public class SettingGSON {
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        JSONParser parser = new JSONParser();
+        Gson gson = new Gson();
 
         try {
-            Object obj = parser.parse(new InputStreamReader(SettingsGSON.class.getResourceAsStream("/config.json")));
-            JSONObject jsonObject = (JSONObject)obj;
-            //JSONObject arr = (JSONObject)jsonObject.get(0);
-            JSONObject arguments = (JSONObject)jsonObject.get(0);
 
-            for(int i = 0; i < arguments.size(); ++i) {
-                JSONObject object = (JSONObject)arguments.get(i);
-                System.out.println(object);
-            }
-        } catch (Exception var8) {
-            var8.printStackTrace();
+            BufferedReader br = new BufferedReader(
+                    new FileReader("/config.json"));
+
+            //convert the json string back to object
+            DataObject obj = gson.fromJson(br, DataObject.class);
+
+            System.out.println(obj);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
