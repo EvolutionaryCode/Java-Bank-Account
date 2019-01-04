@@ -1,28 +1,30 @@
 package org.aagrandpre.bank.core.utils;
 
-import java.io.BufferedReader;
-        import java.io.FileReader;
-        import java.io.IOException;
-        import com.google.gson.Gson;
+import java.io.FileReader;
+import java.io.IOException;
 
-public class SettingGSON {
-    public static void main(String[] args) {
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-        Gson gson = new Gson();
 
+public class SettingsGSON {
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        JSONParser parser = new JSONParser();
         try {
-
-            BufferedReader br = new BufferedReader(
-                    new FileReader("/config.json"));
-
-            //convert the json string back to object
-            DataObject obj = gson.fromJson(br, DataObject.class);
-
-            System.out.println(obj);
-
-        } catch (IOException e) {
+            // parsing file "JSONExample.json"
+            Object obj = new JSONParser().parse(new FileReader("bankconfig.json"));
+            // typecasting obj to JSONObject
+            JSONObject jo = (JSONObject) obj;
+            // getting firstName and lastName
+            String dbtype = (String) jo.get("dbconnected");
+            String address = (String) jo.get("lastName");
+            //Print out first/lastname
+            System.out.println(dbtype);
+            System.out.println(address);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }
