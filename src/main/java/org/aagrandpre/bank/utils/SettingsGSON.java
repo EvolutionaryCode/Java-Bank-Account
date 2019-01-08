@@ -1,4 +1,4 @@
-package org.aagrandpre.bank.core.utils;
+package org.aagrandpre.bank.utils;
 
 import java.io.FileReader;
 import java.util.Iterator;

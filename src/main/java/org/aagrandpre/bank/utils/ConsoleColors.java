@@ -1,4 +1,4 @@
-package org.aagrandpre.bank.core.utils;
+package org.aagrandpre.bank.utils;
 
 public class ConsoleColors {
     //shakram02 From StackOverflow
